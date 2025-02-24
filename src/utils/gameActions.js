@@ -6,6 +6,7 @@ import {
   determineWinner,
   createDeck,
   shuffleDeck,
+  calculateHandValue,
 } from "./blackjackLogic.js";
 
 /**
@@ -75,46 +76,40 @@ export const handleBetAction = (gameState, amount, isHost, playerName) => {
  * @returns {Object} Updates to apply to the game state
  */
 export const handleHitAction = (gameState, isHost, playerName) => {
-  // Create new arrays to avoid reference issues
-  const newDeck = JSON.parse(JSON.stringify(gameState.deck));
-  const card = newDeck.shift();
+  // Get the first card from the deck
+  const [card, ...remainingDeck] = gameState.deck;
 
-  const currentHand = [
-    ...(isHost ? gameState.host_hand : gameState.friend_hand).map((card) =>
-      JSON.parse(JSON.stringify(card))
-    ),
-    card,
-  ];
+  // Get current hand and add new card
+  const currentHand = isHost ? gameState.host_hand : gameState.friend_hand;
+  const updatedHand = [...currentHand, card];
 
   const updates = {
-    deck: newDeck,
-    [isHost ? "host_hand" : "friend_hand"]: currentHand,
+    deck: remainingDeck,
+    [isHost ? "host_hand" : "friend_hand"]: updatedHand,
     log: [
-      ...gameState.log.map((entry) => JSON.parse(JSON.stringify(entry))),
+      ...gameState.log,
       {
         action: "hit",
         player: playerName,
-        card: JSON.parse(JSON.stringify(card)),
+        card,
         timestamp: new Date().toISOString(),
       },
     ],
   };
 
-  if (isBust(currentHand)) {
+  // Check for bust or exactly 21
+  const handValue = calculateHandValue(updatedHand);
+  if (isBust(updatedHand) || handValue === 21) {
     updates.state = "finished";
-    const newDealerCard = newDeck.shift();
-    updates.dealer_hand = [
-      ...gameState.dealer_hand.map((card) => JSON.parse(JSON.stringify(card))),
-      JSON.parse(JSON.stringify(newDealerCard)),
-    ];
-
-    if (determineWinner(currentHand, updates.dealer_hand) === "dealer") {
-      updates.log.push({
-        action: "bust",
-        player: playerName,
-        timestamp: new Date().toISOString(),
-      });
-    }
+    // Reveal dealer's second card
+    const [dealerCard, ...finalDeck] = remainingDeck;
+    updates.deck = finalDeck;
+    updates.dealer_hand = [...gameState.dealer_hand, dealerCard];
+    updates.log.push({
+      action: isBust(updatedHand) ? "bust" : "twenty-one",
+      player: playerName,
+      timestamp: new Date().toISOString(),
+    });
   }
 
   return updates;

@@ -106,6 +106,7 @@ function BlackjackGame() {
       timer = setInterval(() => {
         setCountdown((prev) => {
           if (prev <= 1) {
+            clearInterval(timer);
             if (isHost(gameState)) {
               handleReset();
             }
@@ -114,9 +115,13 @@ function BlackjackGame() {
           return prev - 1;
         });
       }, 1000);
+    } else if (autoDealPaused) {
+      setCountdown(5);
     }
     return () => {
-      if (timer) clearInterval(timer);
+      if (timer) {
+        clearInterval(timer);
+      }
     };
   }, [gameState?.state, autoDealPaused, handleReset, isHost, gameState]);
 
@@ -284,6 +289,12 @@ function BlackjackGame() {
     }
   };
 
+  const handleManualDeal = () => {
+    if (isHost(gameState)) {
+      handleReset();
+    }
+  };
+
   return (
     <div className="blackjack-game">
       {error && <div className="error">{error}</div>}
@@ -341,6 +352,11 @@ function BlackjackGame() {
                   <button onClick={() => setAutoDealPaused(!autoDealPaused)}>
                     {autoDealPaused ? "Resume Auto-Deal" : "Pause Auto-Deal"}
                   </button>
+                  {autoDealPaused && isHost(gameState) && (
+                    <button onClick={handleManualDeal} className="deal-button">
+                      Deal Next Hand
+                    </button>
+                  )}
                 </div>
               )}
 
@@ -352,13 +368,13 @@ function BlackjackGame() {
                       key={idx}
                       rank={card.rank}
                       suit={card.suit}
-                      width={96}
+                      width={120}
                       faceDown={gameState.state === "playing"}
                     />
                   ))}
                   {gameState.state === "playing" &&
                     gameState.dealer_hand.length === 1 && (
-                      <PixelCard width={96} faceDown={true} />
+                      <PixelCard width={120} faceDown={true} />
                     )}
                 </div>
                 {gameState.state === "finished" && (
@@ -383,7 +399,7 @@ function BlackjackGame() {
                       key={idx}
                       rank={card.rank}
                       suit={card.suit}
-                      width={96}
+                      width={120}
                     />
                   ))}
                 </div>
@@ -401,7 +417,7 @@ function BlackjackGame() {
                       key={idx}
                       rank={card.rank}
                       suit={card.suit}
-                      width={96}
+                      width={120}
                     />
                   ))}
                 </div>
