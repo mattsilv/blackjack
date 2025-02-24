@@ -1,8 +1,8 @@
 import React, { useState, useRef } from "react";
-import PixelCard from "./PixelCard";
-import CardConfig from "../config/CardConfig";
+import PixelCard from "./PixelCard.js";
+import CardConfig from "../config/CardConfig.js";
 import "./SymbolDesigner.css";
-import SymbolEditor from "./SymbolEditor";
+import SymbolEditor from "./SymbolEditor.js";
 
 function ExportModal({ isOpen, onClose, exportCode, suitName }) {
   const textAreaRef = useRef(null);

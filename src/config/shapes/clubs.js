@@ -1,4 +1,9 @@
-const clubsShape = [
+/**
+ * Clubs suit pixel art pattern
+ * Source: https://github.com/mattsilv/blackjack/blob/main/src/config/shapes/clubs.js
+ */
+
+const clubs = [
   [
     null,
     null,
@@ -441,4 +446,4 @@ const clubsShape = [
   ],
 ];
 
-export default clubsShape;
+export default clubs;

@@ -1,10 +1,10 @@
 import React, { useRef, useEffect } from "react";
-import CardConfig from "../config/CardConfig";
+import CardConfig from "../config/CardConfig.js";
 import {
   createBackGrid,
   createCardPattern,
   renderGridToCanvas,
-} from "../utils/cardHelpers";
+} from "../utils/cardHelpers.js";
 
 function PixelCard({
   rank = "A",

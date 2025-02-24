@@ -1,7 +1,11 @@
 import { createClient } from "@supabase/supabase-js";
 
-const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
-const supabaseKey = process.env.REACT_APP_SUPABASE_ANON_KEY;
+const supabaseUrl =
+  process.env.REACT_APP_SUPABASE_URL ||
+  import.meta?.env?.REACT_APP_SUPABASE_URL;
+const supabaseKey =
+  process.env.REACT_APP_SUPABASE_ANON_KEY ||
+  import.meta?.env?.REACT_APP_SUPABASE_ANON_KEY;
 
 // Debug environment variables (without exposing sensitive data)
 console.log("Environment variables check:", {
@@ -28,7 +32,7 @@ const supabase = createClient(supabaseUrl, supabaseKey, {
   auth: {
     persistSession: true,
     storageKey: "blackjack-auth-token",
-    storage: window.localStorage,
+    storage: typeof window !== "undefined" ? window.localStorage : null,
   },
 });
 

@@ -1,20 +1,20 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { supabase } from "../supabaseClient";
+import { supabase } from "../supabaseClient.js";
 import {
   createDeck,
   shuffleDeck,
   calculateHandValue,
   determineWinner,
-} from "../utils/blackjackLogic";
+} from "../utils/blackjackLogic.js";
 import {
   handleBetAction,
   handleHitAction,
   handleStandAction,
   updateGameState,
   resetGame,
-} from "../utils/gameActions";
-import { useGameSession } from "../hooks/useGameSession";
-import PixelCard from "./PixelCard";
+} from "../utils/gameActions.js";
+import { useGameSession } from "../hooks/useGameSession.js";
+import PixelCard from "./PixelCard.js";
 import "./BlackjackGame.css";
 
 function BlackjackGame() {
@@ -37,6 +37,7 @@ function BlackjackGame() {
   const [error, setError] = useState(null);
   const [autoDealPaused, setAutoDealPaused] = useState(false);
   const [betAmount, setBetAmount] = useState(25);
+  const [countdown, setCountdown] = useState(5);
 
   const fetchGame = useCallback(async () => {
     const { data, error } = await supabase
@@ -99,13 +100,25 @@ function BlackjackGame() {
   }, [gameId, fetchGame]);
 
   useEffect(() => {
+    let timer;
     if (gameState?.state === "finished" && !autoDealPaused) {
-      const timer = setTimeout(() => {
-        handleReset();
-      }, 10000);
-      return () => clearTimeout(timer);
+      setCountdown(5);
+      timer = setInterval(() => {
+        setCountdown((prev) => {
+          if (prev <= 1) {
+            if (isHost(gameState)) {
+              handleReset();
+            }
+            return 5;
+          }
+          return prev - 1;
+        });
+      }, 1000);
     }
-  }, [gameState?.state, autoDealPaused, handleReset]);
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  }, [gameState?.state, autoDealPaused, handleReset, isHost, gameState]);
 
   const createGame = async (friendName) => {
     setLoading(true);
@@ -262,7 +275,7 @@ function BlackjackGame() {
         }
 
         if (!autoDealPaused) {
-          message += " (Next hand in 10s...)";
+          message += ` (Next hand in ${countdown}s...)`;
         }
         return message;
       }

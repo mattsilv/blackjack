@@ -107,7 +107,7 @@ export function createCardPattern(
   drawSymbol(cardGrid, rankPattern, rankX, rankY, color, rankScale);
 
   // Draw small suit below top rank
-  const smallSuitScale = 1;
+  const smallSuitScale = 2;
   const smallSuitX = rankX;
   const smallSuitY = rankY + rankPattern.length * rankScale + 3;
   drawSymbol(
@@ -120,7 +120,7 @@ export function createCardPattern(
   );
 
   // Draw center suit with larger scale
-  const centerSuitScale = 2;
+  const centerSuitScale = 4;
   const centerSuitX = Math.floor(
     (cardWidth - suitPattern[0].length * centerSuitScale) / 2
   );

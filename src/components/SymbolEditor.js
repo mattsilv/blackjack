@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import PixelCard from "./PixelCard";
-import CardConfig from "../config/CardConfig";
+import PixelCard from "./PixelCard.js";
+import CardConfig from "../config/CardConfig.js";
 
 function SymbolEditor({ initialPattern, onSave, suit }) {
   const DEFAULT_SIZE = 20;

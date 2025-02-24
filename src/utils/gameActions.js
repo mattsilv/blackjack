@@ -1,4 +1,4 @@
-import { supabase } from "../supabaseClient";
+import { supabase } from "../supabaseClient.js";
 import {
   isBlackjack,
   isBust,
@@ -6,7 +6,7 @@ import {
   determineWinner,
   createDeck,
   shuffleDeck,
-} from "./blackjackLogic";
+} from "./blackjackLogic.js";
 
 /**
  * Handles the betting action for a player
@@ -75,24 +75,45 @@ export const handleBetAction = (gameState, amount, isHost, playerName) => {
  * @returns {Object} Updates to apply to the game state
  */
 export const handleHitAction = (gameState, isHost, playerName) => {
-  const newDeck = [...gameState.deck];
+  // Create new arrays to avoid reference issues
+  const newDeck = JSON.parse(JSON.stringify(gameState.deck));
   const card = newDeck.shift();
+
   const currentHand = [
-    ...(isHost ? gameState.host_hand : gameState.friend_hand),
+    ...(isHost ? gameState.host_hand : gameState.friend_hand).map((card) =>
+      JSON.parse(JSON.stringify(card))
+    ),
     card,
   ];
 
   const updates = {
     deck: newDeck,
     [isHost ? "host_hand" : "friend_hand"]: currentHand,
-    log: [...gameState.log, { action: "hit", player: playerName, card }],
+    log: [
+      ...gameState.log.map((entry) => JSON.parse(JSON.stringify(entry))),
+      {
+        action: "hit",
+        player: playerName,
+        card: JSON.parse(JSON.stringify(card)),
+        timestamp: new Date().toISOString(),
+      },
+    ],
   };
 
   if (isBust(currentHand)) {
     updates.state = "finished";
-    updates.dealer_hand = [...gameState.dealer_hand, newDeck.shift()];
+    const newDealerCard = newDeck.shift();
+    updates.dealer_hand = [
+      ...gameState.dealer_hand.map((card) => JSON.parse(JSON.stringify(card))),
+      JSON.parse(JSON.stringify(newDealerCard)),
+    ];
+
     if (determineWinner(currentHand, updates.dealer_hand) === "dealer") {
-      updates.log.push({ action: "bust", player: playerName });
+      updates.log.push({
+        action: "bust",
+        player: playerName,
+        timestamp: new Date().toISOString(),
+      });
     }
   }
 
@@ -162,18 +183,48 @@ export const handleStandAction = (
  * @returns {Promise<Object>} Result of the update operation
  */
 export const updateGameState = async (gameId, updates) => {
-  console.log("Updating game state:", {
-    gameId,
-    updates,
-  });
+  console.log("Updating game state:", { gameId, updates });
 
-  const result = await supabase.from("games").update(updates).eq("id", gameId);
+  try {
+    // Add explicit filters and use single() for better query plan
+    const { data, error } = await supabase
+      .from("games")
+      .update(updates)
+      .eq("id", gameId) // Explicit filter for better performance
+      .select(
+        `
+        id,
+        host,
+        friend,
+        state,
+        host_balance,
+        friend_balance,
+        current_bet,
+        current_turn,
+        deck,
+        host_hand,
+        friend_hand,
+        dealer_hand,
+        log,
+        round_number,
+        game_history,
+        used_cards,
+        round_results,
+        player_stats
+      `
+      ) // Explicit column selection
+      .single(); // Use single() for better query plan
 
-  if (result.error) {
-    console.error("Supabase update error:", result.error);
+    if (error) {
+      console.error("Supabase update error:", error);
+      throw error;
+    }
+
+    return { data, error: null };
+  } catch (err) {
+    console.error("Error updating game state:", err);
+    return { data: null, error: err };
   }
-
-  return result;
 };
 
 /**

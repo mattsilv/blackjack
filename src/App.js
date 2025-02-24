@@ -1,8 +1,8 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
-import PixelCard from "./components/PixelCard";
-import SymbolDesigner from "./components/SymbolDesigner";
-import BlackjackGame from "./components/BlackjackGame";
+import PixelCard from "./components/PixelCard.js";
+import SymbolDesigner from "./components/SymbolDesigner.js";
+import BlackjackGame from "./components/BlackjackGame.js";
 import "./App.css";
 
 function ArtworkDemo() {
