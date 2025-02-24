@@ -3,9 +3,11 @@ import diamonds from "./diamonds";
 import spades from "./spades";
 import clubs from "./clubs";
 
-export default {
+const shapes = {
   hearts,
   diamonds,
   spades,
   clubs,
 };
+
+export default shapes;

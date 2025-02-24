@@ -1,4 +1,4 @@
-export default [
+const spadesShape = [
   [
     null,
     null,
@@ -252,3 +252,5 @@ export default [
     null,
   ],
 ];
+
+export default spadesShape;

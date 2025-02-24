@@ -1,4 +1,4 @@
-export default [
+const heartsShape = [
   [
     null,
     null,
@@ -252,3 +252,5 @@ export default [
     null,
   ],
 ];
+
+export default heartsShape;

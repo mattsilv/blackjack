@@ -1,4 +1,4 @@
-export default [
+const clubsShape = [
   [
     null,
     null,
@@ -440,3 +440,5 @@ export default [
     null,
   ],
 ];
+
+export default clubsShape;

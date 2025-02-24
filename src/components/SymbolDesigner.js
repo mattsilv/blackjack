@@ -4,8 +4,6 @@ import CardConfig from "../config/CardConfig";
 import "./SymbolDesigner.css";
 import SymbolEditor from "./SymbolEditor";
 
-const GRID_SIZE = 20;
-
 function ExportModal({ isOpen, onClose, exportCode, suitName }) {
   const textAreaRef = useRef(null);
 

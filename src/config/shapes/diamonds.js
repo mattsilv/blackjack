@@ -1,4 +1,4 @@
-export default [
+const diamondsShape = [
   [
     null,
     null,
@@ -270,3 +270,5 @@ export default [
     null,
   ],
 ];
+
+export default diamondsShape;
