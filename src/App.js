@@ -1,9 +1,11 @@
 import React from "react";
+import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import PixelCard from "./components/PixelCard";
 import SymbolDesigner from "./components/SymbolDesigner";
+import BlackjackGame from "./components/BlackjackGame";
 import "./App.css";
 
-function App() {
+function ArtworkDemo() {
   return (
     <div style={{ padding: 20, maxWidth: 1200, margin: "0 auto" }}>
       <h1>Pixel Art Playing Cards Demo</h1>
@@ -50,6 +52,33 @@ function App() {
         </div>
       </div>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <Router>
+      <div>
+        <nav
+          style={{
+            padding: "1rem",
+            background: "#f5f5f5",
+            marginBottom: "2rem",
+          }}
+        >
+          <Link to="/" style={{ marginRight: "1rem" }}>
+            Artwork Demo
+          </Link>
+          <Link to="/blackjack">Play Blackjack</Link>
+        </nav>
+
+        <Routes>
+          <Route path="/" element={<ArtworkDemo />} />
+          <Route path="/artwork" element={<ArtworkDemo />} />
+          <Route path="/blackjack" element={<BlackjackGame />} />
+        </Routes>
+      </div>
+    </Router>
   );
 }
 

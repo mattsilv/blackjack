@@ -1,0 +1,363 @@
+.blackjack-game {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+@media (min-width: 768px) {
+  .blackjack-game {
+    padding: 2rem;
+  }
+}
+
+.error {
+  color: #ff4444;
+  background: #ffebee;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.game-setup {
+  max-width: 400px;
+  margin: 0 auto;
+  text-align: center;
+  padding: 1rem;
+}
+
+.game-setup input {
+  display: block;
+  width: 100%;
+  margin: 1rem 0;
+  padding: 0.75rem;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.game-setup button {
+  width: 100%;
+  padding: 0.75rem;
+  font-size: 1rem;
+  background: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.game-setup button:hover:not(:disabled) {
+  background: #45a049;
+}
+
+.game-setup button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.game-board {
+  text-align: center;
+}
+
+.game-board h2 {
+  font-size: 1.5rem;
+  margin: 1rem 0;
+}
+
+@media (min-width: 768px) {
+  .game-board h2 {
+    font-size: 2rem;
+  }
+}
+
+.dealer-area,
+.player-area {
+  margin: 1.5rem 0;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+}
+
+@media (min-width: 768px) {
+  .dealer-area,
+  .player-area {
+    margin: 2.5rem 0;
+    padding: 2rem;
+  }
+}
+
+.cards {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin: 1.5rem 0;
+  flex-wrap: wrap;
+}
+
+@media (min-width: 768px) {
+  .cards {
+    gap: 1.2rem;
+  }
+}
+
+.betting {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: center;
+  margin: 1rem 0;
+}
+
+@media (min-width: 768px) {
+  .betting {
+    flex-direction: row;
+    gap: 1rem;
+    justify-content: center;
+  }
+}
+
+.betting input {
+  padding: 0.75rem;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  width: 100%;
+  max-width: 200px;
+}
+
+.actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  margin: 1rem 0;
+}
+
+.actions button,
+.betting button {
+  padding: 0.75rem 2rem;
+  font-size: 1rem;
+  background: #2196f3;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  min-width: 120px;
+}
+
+.actions button:hover,
+.betting button:hover {
+  background: #1976d2;
+}
+
+.balance {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #4caf50;
+  margin: 1rem 0;
+}
+
+.bet-controls {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.bet-controls button {
+  padding: 0.5rem 1rem;
+  background: #2196f3;
+  border: none;
+  border-radius: 4px;
+  color: white;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.bet-controls button:hover {
+  background: #1976d2;
+}
+
+.bet-controls input {
+  width: 80px;
+  padding: 0.5rem;
+  text-align: center;
+  font-size: 1rem;
+  border: 2px solid #2196f3;
+  border-radius: 4px;
+}
+
+.place-bet-button {
+  padding: 0.75rem 2rem !important;
+  font-size: 1.1rem !important;
+  background: #4caf50 !important;
+}
+
+.place-bet-button:hover {
+  background: #388e3c !important;
+}
+
+.auto-deal-controls {
+  text-align: center;
+  margin: 1rem 0;
+}
+
+.auto-deal-controls button {
+  padding: 0.5rem 1rem;
+  background: #9c27b0;
+  border: none;
+  border-radius: 4px;
+  color: white;
+  cursor: pointer;
+}
+
+.auto-deal-controls button:hover {
+  background: #7b1fa2;
+}
+
+.host-controls {
+  margin-top: 2rem;
+  text-align: center;
+}
+
+.reset-button {
+  padding: 0.75rem 2rem;
+  background: #f44336;
+  border: none;
+  border-radius: 4px;
+  color: white;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.reset-button:hover {
+  background: #d32f2f;
+}
+
+.game-status {
+  text-align: center;
+  padding: 1rem;
+  margin: 1rem 0;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  font-size: 1.1rem;
+}
+
+.game-status.finished {
+  font-weight: bold;
+  color: #4caf50;
+}
+
+/* Game state indicators */
+.game-status {
+  margin: 1rem 0;
+  padding: 0.5rem;
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+.game-status.waiting {
+  background: #fff3e0;
+  color: #e65100;
+}
+
+.game-status.playing {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+/* Card animations */
+.cards > div {
+  transition: transform 0.2s;
+}
+
+.cards > div:hover {
+  transform: translateY(-5px);
+}
+
+/* Loading state */
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+  font-size: 1.2rem;
+  color: #666;
+}
+
+.player-info {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 1rem;
+  margin: 1rem 0;
+  border-radius: 4px;
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  font-size: 1.1rem;
+}
+
+.player-info strong {
+  color: #2196f3;
+}
+
+@media (max-width: 768px) {
+  .player-info {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: center;
+  }
+}
+
+.game-urls {
+  margin-top: 2rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+}
+
+.game-urls h4 {
+  margin: 0 0 1rem 0;
+  color: #2196f3;
+}
+
+.url-box {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.url-box > div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.url-box input {
+  width: 100%;
+  padding: 0.75rem;
+  font-family: monospace;
+  font-size: 0.9rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #666;
+  cursor: pointer;
+}
+
+.url-box input:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.url-box input:focus {
+  outline: none;
+  border-color: #2196f3;
+}
+
+@media (min-width: 768px) {
+  .url-box {
+    padding: 0 2rem;
+  }
+}
