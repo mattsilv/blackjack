@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Card Sprite Generator</title>
+    <style>
+      body {
+        font-family: "Courier New", monospace;
+        background-color: #f0f0f0;
+        padding: 20px;
+      }
+      canvas {
+        border: 1px solid #000;
+        background-color: #fff;
+        image-rendering: pixelated;
+        margin-bottom: 20px;
+      }
+      button {
+        display: block;
+        margin: 10px 0;
+        padding: 10px;
+        background-color: #0078d7;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Card Sprite Generator</h1>
+      <p>
+        This tool generates a pixel art sprite sheet for card suits and ranks.
+      </p>
+
+      <canvas id="canvas" width="256" height="128"></canvas>
+
+      <button id="downloadBtn">Download Sprite Sheet</button>
+    </div>
+
+    <script>
+      const canvas = document.getElementById("canvas");
+      const ctx = canvas.getContext("2d");
+      const downloadBtn = document.getElementById("downloadBtn");
+
+      // Sprite configuration
+      const spriteSize = 16;
+      const ranks = [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "J",
+        "Q",
+        "K",
+        "A",
+      ];
+      const suits = ["hearts", "diamonds", "clubs", "spades"];
+
+      // Disable image smoothing for pixel art
+      ctx.imageSmoothingEnabled = false;
+
+      // Draw background
+      ctx.fillStyle = "white";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Draw suit sprites (first row)
+      function drawSuitSprites() {
+        for (let i = 0; i < suits.length; i++) {
+          const x = i * spriteSize;
+          const y = 0;
+
+          ctx.fillStyle =
+            suits[i] === "hearts" || suits[i] === "diamonds" ? "red" : "black";
+
+          // Draw pixel art for each suit
+          switch (suits[i]) {
+            case "hearts":
+              drawHeartSprite(x, y);
+              break;
+            case "diamonds":
+              drawDiamondSprite(x, y);
+              break;
+            case "clubs":
+              drawClubSprite(x, y);
+              break;
+            case "spades":
+              drawSpadeSprite(x, y);
+              break;
+          }
+        }
+      }
+
+      // Draw rank sprites (second row)
+      function drawRankSprites() {
+        for (let i = 0; i < ranks.length; i++) {
+          const x = i * spriteSize;
+          const y = spriteSize;
+
+          ctx.fillStyle = "black";
+          ctx.font = "12px monospace";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+
+          // Draw rank
+          ctx.fillText(ranks[i], x + spriteSize / 2, y + spriteSize / 2);
+        }
+      }
+
+      // Helper functions to draw pixel art for each suit
+      function drawHeartSprite(x, y) {
+        // Draw a heart
+        ctx.fillRect(x + 4, y + 3, 2, 2);
+        ctx.fillRect(x + 10, y + 3, 2, 2);
+        ctx.fillRect(x + 3, y + 4, 4, 2);
+        ctx.fillRect(x + 9, y + 4, 4, 2);
+        ctx.fillRect(x + 2, y + 6, 12, 2);
+        ctx.fillRect(x + 3, y + 8, 10, 2);
+        ctx.fillRect(x + 4, y + 10, 8, 2);
+        ctx.fillRect(x + 6, y + 12, 4, 2);
+        ctx.fillRect(x + 7, y + 14, 2, 1);
+      }
+
+      function drawDiamondSprite(x, y) {
+        // Draw a diamond
+        ctx.fillRect(x + 8, y + 2, 1, 2);
+        ctx.fillRect(x + 7, y + 4, 3, 2);
+        ctx.fillRect(x + 6, y + 6, 5, 1);
+        ctx.fillRect(x + 5, y + 7, 7, 2);
+        ctx.fillRect(x + 4, y + 9, 9, 1);
+        ctx.fillRect(x + 5, y + 10, 7, 1);
+        ctx.fillRect(x + 6, y + 11, 5, 1);
+        ctx.fillRect(x + 7, y + 12, 3, 1);
+        ctx.fillRect(x + 8, y + 13, 1, 1);
+      }
+
+      function drawClubSprite(x, y) {
+        // Draw a club
+        ctx.fillRect(x + 7, y + 2, 2, 3);
+        ctx.fillRect(x + 5, y + 5, 6, 1);
+        ctx.fillRect(x + 4, y + 6, 3, 3);
+        ctx.fillRect(x + 9, y + 6, 3, 3);
+        ctx.fillRect(x + 6, y + 7, 4, 2);
+        ctx.fillRect(x + 7, y + 9, 2, 4);
+        ctx.fillRect(x + 6, y + 13, 4, 1);
+      }
+
+      function drawSpadeSprite(x, y) {
+        // Draw a spade
+        ctx.fillRect(x + 8, y + 2, 1, 1);
+        ctx.fillRect(x + 7, y + 3, 3, 1);
+        ctx.fillRect(x + 6, y + 4, 5, 1);
+        ctx.fillRect(x + 5, y + 5, 7, 2);
+        ctx.fillRect(x + 4, y + 7, 9, 2);
+        ctx.fillRect(x + 7, y + 9, 3, 3);
+        ctx.fillRect(x + 6, y + 12, 5, 1);
+        ctx.fillRect(x + 7, y + 13, 3, 1);
+      }
+
+      // Generate the sprite sheet
+      drawSuitSprites();
+      drawRankSprites();
+
+      // Download functionality
+      downloadBtn.addEventListener("click", function () {
+        const link = document.createElement("a");
+        link.download = "card-sprites.png";
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+      });
+    </script>
+  </body>
+</html>

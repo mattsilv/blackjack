@@ -1,4 +1,4 @@
-import { supabase } from "../supabaseClient.js";
+import { supabase, handleSupabaseError } from "../supabaseClient.js";
 import {
   isBlackjack,
   isBust,
@@ -76,46 +76,155 @@ export const handleBetAction = (gameState, amount, isHost, playerName) => {
  * @returns {Object} Updates to apply to the game state
  */
 export const handleHitAction = (gameState, isHost, playerName) => {
-  // Create new arrays instead of mutating
-  const deck = [...gameState.deck];
-  const card = deck[0]; // Get first card
-  const remainingDeck = deck.slice(1); // Get rest of deck
+  try {
+    // Validate inputs
+    if (
+      !gameState ||
+      !gameState.deck ||
+      !Array.isArray(gameState.deck) ||
+      gameState.deck.length === 0
+    ) {
+      console.error("Invalid game state or empty deck:", gameState?.deck);
+      throw new Error("Cannot hit: deck is empty or invalid");
+    }
 
-  // Get current hand and add new card
-  const currentHand = isHost ? gameState.host_hand : gameState.friend_hand;
-  const updatedHand = [...currentHand, card];
+    // Create new arrays instead of mutating
+    const deck = [...gameState.deck];
+    const card = deck[0]; // Get first card
 
-  const updates = {
-    deck: remainingDeck,
-    [isHost ? "host_hand" : "friend_hand"]: updatedHand,
-    log: [
-      ...gameState.log,
-      {
-        action: "hit",
-        player: playerName,
-        card,
-        timestamp: new Date().toISOString(),
-      },
-    ],
-  };
+    // Validate card object
+    if (!card || typeof card !== "object" || !card.rank || !card.suit) {
+      console.error("Invalid card object:", card);
+      throw new Error("Cannot hit: invalid card in deck");
+    }
 
-  // Check for bust or exactly 21
-  const handValue = calculateHandValue(updatedHand);
-  if (isBust(updatedHand) || handValue === 21) {
-    updates.state = "finished";
-    // Reveal dealer's second card without mutating arrays
-    const dealerCard = remainingDeck[0];
-    const finalDeck = remainingDeck.slice(1);
-    updates.deck = finalDeck;
-    updates.dealer_hand = [...gameState.dealer_hand, dealerCard];
-    updates.log.push({
-      action: isBust(updatedHand) ? "bust" : "twenty-one",
-      player: playerName,
-      timestamp: new Date().toISOString(),
-    });
+    const remainingDeck = deck.slice(1); // Get rest of deck
+
+    // Get current hand and add new card
+    const currentHand = isHost ? gameState.host_hand : gameState.friend_hand;
+
+    // Validate current hand
+    if (!Array.isArray(currentHand)) {
+      console.error("Invalid hand:", currentHand);
+      throw new Error("Cannot hit: player hand is invalid");
+    }
+
+    const updatedHand = [...currentHand, card];
+
+    const updates = {
+      deck: remainingDeck,
+      [isHost ? "host_hand" : "friend_hand"]: updatedHand,
+      log: [
+        ...(Array.isArray(gameState.log) ? gameState.log : []),
+        {
+          action: "hit",
+          player: playerName,
+          card,
+          timestamp: new Date().toISOString(),
+        },
+      ],
+    };
+
+    // Check for bust or exactly 21
+    const handValue = calculateHandValue(updatedHand);
+    if (isBust(updatedHand) || handValue === 21) {
+      // If player busts, move to next player's turn instead of ending the game
+      if (isBust(updatedHand)) {
+        updates.current_turn = isHost ? "friend" : "host";
+        updates.log.push({
+          action: "bust",
+          player: playerName,
+          timestamp: new Date().toISOString(),
+        });
+
+        // Check if other player has already played
+        const otherPlayerAction = gameState.log.some(
+          (entry) =>
+            (entry.action === "stand" || entry.action === "bust") &&
+            entry.player !== playerName
+        );
+
+        // If other player has already played or this is the guest player, finish the game
+        if (otherPlayerAction || !isHost) {
+          updates.state = "finished";
+
+          // Deal cards to dealer if needed
+          if (remainingDeck.length > 0) {
+            const dealerCard = remainingDeck[0];
+            const finalDeck = remainingDeck.slice(1);
+            updates.deck = finalDeck;
+            updates.dealer_hand = [
+              ...(Array.isArray(gameState.dealer_hand)
+                ? gameState.dealer_hand
+                : []),
+              dealerCard,
+            ];
+
+            // Let dealer draw until 17 or higher
+            let dealerHand = [...updates.dealer_hand];
+            let currentDeck = [...finalDeck];
+
+            while (shouldDealerHit(dealerHand) && currentDeck.length > 0) {
+              dealerHand.push(currentDeck.shift());
+            }
+
+            updates.dealer_hand = dealerHand;
+            updates.deck = currentDeck;
+          }
+        }
+      } else if (handValue === 21) {
+        // If player hits 21, move to next player's turn
+        updates.current_turn = isHost ? "friend" : "host";
+        updates.log.push({
+          action: "twenty-one",
+          player: playerName,
+          timestamp: new Date().toISOString(),
+        });
+
+        // Check if other player has already played
+        const otherPlayerAction = gameState.log.some(
+          (entry) =>
+            (entry.action === "stand" ||
+              entry.action === "bust" ||
+              entry.action === "twenty-one") &&
+            entry.player !== playerName
+        );
+
+        // If other player has already played or this is the guest player, finish the game
+        if (otherPlayerAction || !isHost) {
+          updates.state = "finished";
+
+          // Deal cards to dealer
+          if (remainingDeck.length > 0) {
+            let dealerHand = [...gameState.dealer_hand, remainingDeck[0]];
+            let currentDeck = [...remainingDeck.slice(1)];
+
+            while (shouldDealerHit(dealerHand) && currentDeck.length > 0) {
+              dealerHand.push(currentDeck.shift());
+            }
+
+            updates.dealer_hand = dealerHand;
+            updates.deck = currentDeck;
+          }
+        }
+      }
+    }
+
+    return updates;
+  } catch (error) {
+    console.error("Error in handleHitAction:", error);
+    // Return minimal updates to avoid breaking the game
+    return {
+      log: [
+        ...(Array.isArray(gameState?.log) ? gameState.log : []),
+        {
+          action: "error",
+          message: error.message,
+          timestamp: new Date().toISOString(),
+        },
+      ],
+    };
   }
-
-  return updates;
 };
 
 /**
@@ -142,29 +251,61 @@ export const handleStandAction = (
     log: [...gameState.log, { action: "stand", player: playerName }],
   };
 
-  // If both players have stood, dealer plays
-  if (isPlayerTurn) {
+  // Check if both players have stood or if it's a single player game
+  const otherPlayerStood = gameState.log.some(
+    (entry) => entry.action === "stand" && entry.player !== playerName
+  );
+
+  // Only finish the game if both players have stood or if it's the second player standing
+  if (otherPlayerStood || (!isHost && isPlayerTurn)) {
+    // Dealer plays
     while (shouldDealerHit(dealerHand)) {
       dealerHand.push(deck.shift());
     }
 
-    const playerHand = isHost ? gameState.host_hand : gameState.friend_hand;
-    const winner = determineWinner(playerHand, dealerHand);
+    // Determine winners for both players
+    const hostHand = gameState.host_hand;
+    const friendHand = gameState.friend_hand;
+    const hostWinner = determineWinner(hostHand, dealerHand);
+    const friendWinner = determineWinner(friendHand, dealerHand);
     const bet = gameState.current_bet;
-    const currentBalance = isHost
-      ? gameState.host_balance
-      : gameState.friend_balance;
 
-    if (winner === "player") {
+    // Handle host winnings
+    if (hostWinner === "player") {
       const winnings = bet * 2;
-      updates[isHost ? "host_balance" : "friend_balance"] =
-        currentBalance + winnings;
-      updates.log.push({ action: "win", player: playerName, winnings });
-    } else if (winner === "tie") {
+      updates.host_balance = gameState.host_balance + winnings;
+      updates.log.push({
+        action: "win",
+        player: gameState.host,
+        winnings,
+      });
+    } else if (hostWinner === "tie") {
       const refund = bet;
-      updates[isHost ? "host_balance" : "friend_balance"] =
-        currentBalance + refund;
-      updates.log.push({ action: "tie", player: playerName, refund });
+      updates.host_balance = gameState.host_balance + refund;
+      updates.log.push({
+        action: "tie",
+        player: gameState.host,
+        refund,
+      });
+    }
+
+    // Handle friend winnings
+    if (friendWinner === "player") {
+      const winnings = bet * 2;
+      updates.friend_balance = gameState.friend_balance + winnings;
+      updates.log.push({
+        action: "win",
+        player: gameState.friend,
+        winnings,
+      });
+    } else if (friendWinner === "tie") {
+      const refund = bet;
+      updates.friend_balance = gameState.friend_balance + refund;
+      updates.log.push({
+        action: "tie",
+        player: gameState.friend,
+        refund,
+      });
     }
 
     updates.dealer_hand = dealerHand;
@@ -181,47 +322,28 @@ export const handleStandAction = (
  * @returns {Promise<Object>} Result of the update operation
  */
 export const updateGameState = async (gameId, updates) => {
-  console.log("Updating game state:", { gameId, updates });
-
   try {
-    // Add explicit filters and use single() for better query plan
+    if (!gameId) {
+      return { error: { message: "Game ID is required" } };
+    }
+
+    // Log the update for debugging
+    console.log(`Updating game ${gameId} with:`, updates);
+
     const { data, error } = await supabase
       .from("games")
       .update(updates)
-      .eq("id", gameId) // Explicit filter for better performance
-      .select(
-        `
-        id,
-        host,
-        friend,
-        state,
-        host_balance,
-        friend_balance,
-        current_bet,
-        current_turn,
-        deck,
-        host_hand,
-        friend_hand,
-        dealer_hand,
-        log,
-        round_number,
-        game_history,
-        used_cards,
-        round_results,
-        player_stats
-      `
-      ) // Explicit column selection
-      .single(); // Use single() for better query plan
+      .eq("id", gameId)
+      .select()
+      .single();
 
     if (error) {
-      console.error("Supabase update error:", error);
-      throw error;
+      return handleSupabaseError(error, "Failed to update game state");
     }
 
-    return { data, error: null };
+    return { data };
   } catch (err) {
-    console.error("Error updating game state:", err);
-    return { data: null, error: err };
+    return handleSupabaseError(err, "Unexpected error updating game state");
   }
 };
 

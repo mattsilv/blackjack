@@ -36,6 +36,21 @@ const supabase = createClient(supabaseUrl, supabaseKey, {
   },
 });
 
+// Helper function to handle Supabase errors
+export const handleSupabaseError = (
+  error,
+  fallbackMessage = "Database operation failed"
+) => {
+  console.error("Supabase error:", error);
+  return {
+    error: {
+      message: error?.message || fallbackMessage,
+      details: error?.details || "No additional details",
+      code: error?.code || "UNKNOWN_ERROR",
+    },
+  };
+};
+
 // Test the connection and check table structure
 const testConnection = async () => {
   try {

@@ -9,8 +9,8 @@ export function useGameSession() {
 
   // Generate game URLs
   const generateGameUrls = (hostName, friendName, gameId) => {
-    const hostUrl = `/blackjack?gameId=${gameId}&role=host`;
-    const guestUrl = `/blackjack?gameId=${gameId}&role=guest`;
+    const hostUrl = `/?gameId=${gameId}&role=host`;
+    const guestUrl = `/?gameId=${gameId}&role=guest`;
 
     return {
       hostUrl: `${window.location.origin}${hostUrl}`,
