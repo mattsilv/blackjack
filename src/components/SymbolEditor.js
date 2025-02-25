@@ -14,6 +14,8 @@ function SymbolEditor({ initialPattern, onSave, suit }) {
   const [mirrorHorizontal, setMirrorHorizontal] = useState(true);
   const [mirrorVertical, setMirrorVertical] = useState(false);
   const [hoverCoords, setHoverCoords] = useState({ x: null, y: null });
+  const [exportCode, setExportCode] = useState("");
+  const [showExport, setShowExport] = useState(false);
 
   const clearAll = () => {
     setGrid(
@@ -64,6 +66,54 @@ function SymbolEditor({ initialPattern, onSave, suit }) {
 
   const handleSave = () => {
     onSave && onSave(grid);
+
+    // Format the grid array as a string with proper indentation
+    let gridString = "[\n";
+    grid.forEach((row, rowIndex) => {
+      gridString += "  [\n";
+      row.forEach((cell, cellIndex) => {
+        gridString += `    ${cell === null ? "null" : `"${cell}"`}`;
+        if (cellIndex < row.length - 1) {
+          gridString += ",";
+        }
+        gridString += "\n";
+      });
+      gridString += "  ]";
+      if (rowIndex < grid.length - 1) {
+        gridString += ",";
+      }
+      gridString += "\n";
+    });
+    gridString += "]";
+
+    // Generate the export code with proper comments and format
+    const suitName = suit.charAt(0).toUpperCase() + suit.slice(1);
+
+    // Check if we should use the const format or direct export format
+    let exportText;
+
+    // For hearts and diamonds, use const format
+    if (suit === "hearts" || suit === "diamonds") {
+      exportText = `/**
+ * ${suitName} suit pixel art pattern
+ * Source: https://github.com/mattsilv/blackjack/blob/main/src/config/shapes/${suit}.js
+ */
+
+const ${suit} = ${gridString};
+
+export default ${suit};`;
+    } else {
+      // For spades and clubs, use direct export format
+      exportText = `/**
+ * ${suitName} suit pixel art pattern
+ * Source: https://github.com/mattsilv/blackjack/blob/main/src/config/shapes/${suit}.js
+ */
+
+export default ${gridString};`;
+    }
+
+    setExportCode(exportText);
+    setShowExport(true);
     console.log(JSON.stringify(grid));
   };
 
@@ -168,6 +218,19 @@ function SymbolEditor({ initialPattern, onSave, suit }) {
           </div>
         </div>
       </div>
+
+      {showExport && (
+        <div className="export-section">
+          <h4>Export Code</h4>
+          <p>Copy this code to update your shape file:</p>
+          <textarea
+            className="export-textarea"
+            value={exportCode}
+            readOnly
+            onClick={(e) => e.target.select()}
+          />
+        </div>
+      )}
 
       <style jsx>{`
         .symbol-editor {
@@ -310,6 +373,27 @@ function SymbolEditor({ initialPattern, onSave, suit }) {
         .card-label {
           font-size: 12px;
           color: #666;
+        }
+        .export-section {
+          margin-top: 2rem;
+          padding: 1rem;
+          border: 1px solid #ccc;
+          border-radius: 4px;
+          background: white;
+        }
+        .export-section h4 {
+          margin: 0 0 0.5rem 0;
+        }
+        .export-textarea {
+          width: 100%;
+          min-height: 300px;
+          font-family: monospace;
+          padding: 1rem;
+          border: 1px solid #ddd;
+          border-radius: 4px;
+          background: #f8f8f8;
+          white-space: pre;
+          overflow: auto;
         }
       `}</style>
     </div>

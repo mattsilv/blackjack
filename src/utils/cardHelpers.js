@@ -22,13 +22,16 @@ export function drawSymbol(
   const patternHeight = symbolPattern.length;
   const patternWidth = symbolPattern[0].length;
 
+  // Use Math.floor for consistent scaling
+  const intScale = Math.max(1, Math.floor(scale));
+
   for (let y = 0; y < patternHeight; y++) {
     for (let x = 0; x < patternWidth; x++) {
       if (symbolPattern[y][x] === "X") {
-        for (let sy = 0; sy < scale; sy++) {
-          for (let sx = 0; sx < scale; sx++) {
-            const yy = offsetY + y * scale + sy;
-            const xx = offsetX + x * scale + sx;
+        for (let sy = 0; sy < intScale; sy++) {
+          for (let sx = 0; sx < intScale; sx++) {
+            const yy = offsetY + y * intScale + sy;
+            const xx = offsetX + x * intScale + sx;
             if (
               yy >= 0 &&
               yy < cardGrid.length &&
@@ -100,15 +103,21 @@ export function createCardPattern(
   const suitPattern = symbols[suit] || [];
   const rankPattern = symbols[rank] || [];
 
-  // Draw rank in top-left corner with proper scaling
-  const rankScale = 3;
-  const rankX = 6;
-  const rankY = 6;
+  // Draw rank in top-left corner with appropriate scaling
+  const rankScale = 3; // Keep at 3 for balanced size
+  const rankX = 8;
+  const rankY = 8;
   drawSymbol(cardGrid, rankPattern, rankX, rankY, color, rankScale);
 
   // Draw small suit below top rank
   const smallSuitScale = 1;
-  const smallSuitX = rankX;
+  const smallSuitX =
+    rankX +
+    Math.floor(
+      (rankPattern[0].length * rankScale -
+        suitPattern[0].length * smallSuitScale) /
+        2
+    );
   const smallSuitY = rankY + rankPattern.length * rankScale + 3;
   drawSymbol(
     cardGrid,
@@ -137,11 +146,11 @@ export function createCardPattern(
   );
 
   // Draw bottom-right rank and suit (inverted)
-  const bottomRankX = cardWidth - rankPattern[0].length * rankScale - 6;
-  const bottomRankY = cardHeight - rankPattern.length * rankScale - 6;
+  const bottomRankX = cardWidth - rankPattern[0].length * rankScale - 8;
+  const bottomRankY = cardHeight - rankPattern.length * rankScale - 8;
   drawSymbol(cardGrid, rankPattern, bottomRankX, bottomRankY, color, rankScale);
 
-  // Center the suit above the rank by calculating the difference in widths
+  // Center the suit above the rank
   const suitWidth = suitPattern[0].length * smallSuitScale;
   const rankWidth = rankPattern[0].length * rankScale;
   const bottomSuitX = bottomRankX + Math.floor((rankWidth - suitWidth) / 2);
@@ -164,15 +173,29 @@ export function renderGridToCanvas(grid, canvas) {
   const rows = grid.length;
   const cols = grid[0].length;
 
+  // Clear canvas
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  const pixelWidth = canvas.width / cols;
-  const pixelHeight = canvas.height / rows;
+  // Disable image smoothing for all browsers
+  ctx.imageSmoothingEnabled = false;
+  ctx.webkitImageSmoothingEnabled = false;
+  ctx.mozImageSmoothingEnabled = false;
+  ctx.msImageSmoothingEnabled = false;
 
+  // Calculate full pixel sizes
+  const pixelWidth = Math.floor(canvas.width / cols);
+  const pixelHeight = Math.floor(canvas.height / rows);
+
+  // Render each pixel with precise placement
   for (let y = 0; y < rows; y++) {
     for (let x = 0; x < cols; x++) {
-      ctx.fillStyle = grid[y][x];
-      ctx.fillRect(x * pixelWidth, y * pixelHeight, pixelWidth, pixelHeight);
+      if (grid[y][x]) {
+        ctx.fillStyle = grid[y][x];
+        // Ensure we draw on exact pixel boundaries
+        const pixelX = Math.floor(x * pixelWidth);
+        const pixelY = Math.floor(y * pixelHeight);
+        ctx.fillRect(pixelX, pixelY, pixelWidth, pixelHeight);
+      }
     }
   }
 }

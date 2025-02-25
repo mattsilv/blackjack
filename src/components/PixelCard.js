@@ -16,7 +16,7 @@ function PixelCard({
   const canvasRef = useRef(null);
 
   const aspectRatio = cardHeight / cardWidth;
-  const canvasHeight = Math.round(width * aspectRatio);
+  const canvasHeight = Math.floor(width * aspectRatio);
 
   useEffect(() => {
     if (canvasRef.current) {
@@ -48,6 +48,10 @@ function PixelCard({
         imageRendering: "pixelated",
         WebkitImageRendering: "pixelated",
         MozImageRendering: "crisp-edges",
+        msImageRendering: "pixelated",
+        msInterpolationMode: "nearest-neighbor",
+        imageOrientation: "from-image",
+        display: "block",
       }}
     />
   );

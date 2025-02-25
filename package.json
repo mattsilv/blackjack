@@ -9,6 +9,8 @@
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
     "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "ngrok": "^5.0.0-beta.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.22.1",
@@ -16,8 +18,12 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start-react": "react-scripts start",
+    "start-ngrok": "node scripts/startNgrok.js",
+    "start": "concurrently \"npm run start-react\" \"sleep 15 && npm run start-ngrok\"",
     "build": "react-scripts build",
+    "serve": "node scripts/prodServer.js",
+    "start-prod": "npm run build && concurrently \"npm run serve\" \"sleep 5 && npm run start-ngrok\"",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "check-db": "node scripts/checkDb.js"
@@ -39,5 +45,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
   }
 }

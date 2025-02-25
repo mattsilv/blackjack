@@ -76,8 +76,10 @@ export const handleBetAction = (gameState, amount, isHost, playerName) => {
  * @returns {Object} Updates to apply to the game state
  */
 export const handleHitAction = (gameState, isHost, playerName) => {
-  // Get the first card from the deck
-  const [card, ...remainingDeck] = gameState.deck;
+  // Create new arrays instead of mutating
+  const deck = [...gameState.deck];
+  const card = deck[0]; // Get first card
+  const remainingDeck = deck.slice(1); // Get rest of deck
 
   // Get current hand and add new card
   const currentHand = isHost ? gameState.host_hand : gameState.friend_hand;
@@ -101,8 +103,9 @@ export const handleHitAction = (gameState, isHost, playerName) => {
   const handValue = calculateHandValue(updatedHand);
   if (isBust(updatedHand) || handValue === 21) {
     updates.state = "finished";
-    // Reveal dealer's second card
-    const [dealerCard, ...finalDeck] = remainingDeck;
+    // Reveal dealer's second card without mutating arrays
+    const dealerCard = remainingDeck[0];
+    const finalDeck = remainingDeck.slice(1);
     updates.deck = finalDeck;
     updates.dealer_hand = [...gameState.dealer_hand, dealerCard];
     updates.log.push({

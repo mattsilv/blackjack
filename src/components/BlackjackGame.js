@@ -101,22 +101,22 @@ function BlackjackGame() {
 
   useEffect(() => {
     let timer;
-    if (gameState?.state === "finished" && !autoDealPaused) {
+    if (gameState?.state === "finished") {
       setCountdown(5);
-      timer = setInterval(() => {
-        setCountdown((prev) => {
-          if (prev <= 1) {
-            clearInterval(timer);
-            if (isHost(gameState)) {
-              handleReset();
+      if (!autoDealPaused) {
+        timer = setInterval(() => {
+          setCountdown((prev) => {
+            if (prev <= 1) {
+              clearInterval(timer);
+              if (isHost(gameState)) {
+                handleReset();
+              }
+              return 0;
             }
-            return 5;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    } else if (autoDealPaused) {
-      setCountdown(5);
+            return prev - 1;
+          });
+        }, 1000);
+      }
     }
     return () => {
       if (timer) {
@@ -292,6 +292,7 @@ function BlackjackGame() {
   const handleManualDeal = () => {
     if (isHost(gameState)) {
       handleReset();
+      setCountdown(5);
     }
   };
 
@@ -349,10 +350,15 @@ function BlackjackGame() {
 
               {gameState.state === "finished" && (
                 <div className="auto-deal-controls">
-                  <button onClick={() => setAutoDealPaused(!autoDealPaused)}>
+                  <button
+                    onClick={() => {
+                      setAutoDealPaused(!autoDealPaused);
+                      setCountdown(5);
+                    }}
+                  >
                     {autoDealPaused ? "Resume Auto-Deal" : "Pause Auto-Deal"}
                   </button>
-                  {autoDealPaused && isHost(gameState) && (
+                  {isHost(gameState) && (
                     <button onClick={handleManualDeal} className="deal-button">
                       Deal Next Hand
                     </button>
