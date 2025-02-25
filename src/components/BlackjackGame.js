@@ -160,7 +160,7 @@ function BlackjackGame() {
             </div>
           </div>
 
-          <GameLinks gameState={gameState} gameId={gameId} />
+          <GameLinks gameState={gameState} gameId={gameId} role={role} />
 
           <GameActions
             isHost={isHost}

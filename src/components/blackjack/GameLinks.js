@@ -1,6 +1,11 @@
 import React from "react";
 
-const GameLinks = ({ gameState, gameId }) => {
+const GameLinks = ({ gameState, gameId, role }) => {
+  // Only show links for the host
+  if (role !== "host") {
+    return null;
+  }
+
   return (
     <div className="bg-green-900 p-3 text-sm">
       <p className="mb-1">Share these links:</p>
